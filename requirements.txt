@@ -2,12 +2,13 @@ fastapi==0.115.0
 uvicorn[standard]==0.30.0
 sqlalchemy==2.0.35
 pydantic==2.9.0
+pydantic-core==2.23.2
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 bcrypt==4.0.1
 python-multipart==0.0.12
 streamlit==1.40.0
-requests==2.32.0
+requests==2.32.3
 qrcode[pil]==8.0
 Pillow==11.0.0
 python-dateutil==2.9.0
