@@ -1,6 +1,37 @@
 import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import threading
+import socket
+import time
+
+# ── Add repo root to path ──────────────────────────────────────────────────────
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+
+
+def _port_open(port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("127.0.0.1", port)) == 0
+
+
+def _start_backend():
+    """Start FastAPI + Uvicorn in a daemon thread (used on Streamlit Cloud)."""
+    if _port_open(8000):
+        return  # already running (local dev with separate terminal)
+    import uvicorn
+    from backend.main import app as _fastapi_app
+    uvicorn.run(_fastapi_app, host="0.0.0.0", port=8000, log_level="error")
+
+
+# Start backend once per process (Streamlit reruns share the process)
+if "backend_started" not in sys.modules:
+    sys.modules["backend_started"] = True          # sentinel
+    threading.Thread(target=_start_backend, daemon=True).start()
+    # Give the server a moment to bind before the first API call
+    for _ in range(20):
+        if _port_open(8000):
+            break
+        time.sleep(0.3)
 
 import json
 import streamlit as st
